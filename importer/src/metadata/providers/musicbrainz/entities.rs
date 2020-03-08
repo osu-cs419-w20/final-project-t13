@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fmt;
 
 use serde::Deserialize;
@@ -138,4 +139,15 @@ pub struct Relation {
     #[serde(rename="target-type")]
     pub target_type: String,
     pub url: Option<RelationURLResource>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct CoverArtImage {
+    pub image: String,
+    pub thumbnails: HashMap<String, String>,
+    pub types: Vec<String>,
+    pub front: bool,
+    pub back: bool,
+    pub comment: String,
+    pub approved: bool,
 }

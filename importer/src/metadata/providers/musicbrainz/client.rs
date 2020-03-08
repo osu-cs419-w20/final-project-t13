@@ -3,9 +3,10 @@ use std::pin::Pin;
 use reqwest::header::{self, HeaderMap};
 use serde::Deserialize;
 
-use super::entities::{Recording, Relation};
+use super::entities::{CoverArtImage, Recording, Relation};
 
 const API_BASE_URL: &'static str = "http://musicbrainz.org/ws/2";
+const CA_API_BASE_URL: &'static str = "http://coverartarchive.org";
 const DOPLR_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 type Result<T> = std::result::Result<T, super::Error>;
@@ -32,10 +33,16 @@ pub struct SearchResponse {
 
 #[derive(Debug, Deserialize)]
 pub struct ArtistResponse {
-    name: String,
+    pub name: String,
     #[serde(rename = "sort-name")]
-    sort_name: String,
-    relations: Vec<Relation>,
+    pub sort_name: String,
+    pub relations: Vec<Relation>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CoverArtResponse {
+    pub release: String,
+    pub images: Vec<CoverArtImage>,
 }
 
 impl Client {
@@ -69,6 +76,17 @@ impl Client {
             .await?;
         let buf = res.bytes().await?;
         let res: SearchResponse = serde_json::from_reader(buf.as_ref()).unwrap();
+        Ok(res)
+    }
+
+    pub async fn get_cover_art(&self, release_id: &str) -> Result<CoverArtResponse> {
+        let url = format!("{}/release/{}", CA_API_BASE_URL, release_id);
+        let res = self.http.get(&url)
+            .query(&[("inc", "url-rels")])
+            .send()
+            .await?;
+        let buf = res.bytes().await?;
+        let res: CoverArtResponse = serde_json::from_reader(buf.as_ref()).unwrap();
         Ok(res)
     }
 

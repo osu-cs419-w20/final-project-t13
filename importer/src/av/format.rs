@@ -107,6 +107,14 @@ impl AVFormatContext {
             Err(AVError::UnknownFormat)
         }
     }
+
+    pub fn bit_rate(&self) -> i64 {
+        unsafe { (*self.ctx).bit_rate / 1000 }
+    }
+
+    pub fn duration(&self) -> i64 {
+        unsafe { (*self.ctx).duration / (ffmpeg_sys::AV_TIME_BASE as i64) }
+    }
 }
 
 impl Drop for AVFormatContext {

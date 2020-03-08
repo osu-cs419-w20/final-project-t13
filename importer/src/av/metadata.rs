@@ -133,6 +133,14 @@ impl<'a> Track<'a> {
         let has_disc_metadata = md.disc.is_some() || md.disc_count.is_some();
         has_disc_metadata
     }
+
+    pub fn bit_rate(&self) -> i64 {
+        self.ctx.bit_rate()
+    }
+
+    pub fn duration(&self) -> i64 {
+        self.ctx.duration()
+    }
 }
 
 #[derive(Debug)]

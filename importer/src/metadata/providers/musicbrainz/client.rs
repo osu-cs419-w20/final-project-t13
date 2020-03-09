@@ -60,7 +60,7 @@ impl Client {
     pub async fn get_artist(&self, id: &str) -> Result<ArtistResponse> {
         let url = format!("{}/artist/{}", API_BASE_URL, id);
         let res = self.http.get(&url)
-            .query(&[("inc", "url-rels")])
+            .query(&[("inc", "url-rels"), ("fmt", "json")])
             .send()
             .await?;
         let buf = res.bytes().await?;
@@ -72,7 +72,7 @@ impl Client {
         let q = build_query_from_track(track);
         let url = API_BASE_URL.to_string() + "/recording";
         let res = self.http.get(&url)
-            .query(&[("query", q)])
+            .query(&[("query", q), ("fmt", "json".to_string())])
             .send()
             .await?;
         let buf = res.bytes().await?;

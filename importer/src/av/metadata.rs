@@ -38,27 +38,27 @@ impl TrackFormat for FLAC {
     fn try_get_metadata<'a, 'b>(&self, md: &'a HashMap<&'b str, &'b str>, item: MetadataKey) -> Option<MetadataValue<'b>> {
         use MetadataKey::*;
         match item {
-            Album => md.iter().find(|&(k, _)| k == &"album" || k == &"ALBUM").map(|(_, a)| MetadataValue::Album(a)),
-            Artist => md.iter().find(|&(k, _)| k == &"artist" || k == &"ARTIST").map(|(_, a)| MetadataValue::Artist(a)),
+            Album => md.iter().find(|&(k, _)| k.to_lowercase() == "album").map(|(_, a)| MetadataValue::Album(a)),
+            Artist => md.iter().find(|&(k, _)| k.to_lowercase() == "artist").map(|(_, a)| MetadataValue::Artist(a)),
             Disc => md
                 .iter()
-                .find(|&(k, _)| k == &"disc" || k == &"DISC")
+                .find(|&(k, _)| k.to_lowercase() == "disc")
                 .and_then(|(_, d)| u8::from_str_radix(d, 10).ok())
                 .map(|d| MetadataValue::Disc(d)),
             DiscCount => md
                 .iter()
-                .find(|&(k, _)| k == &"DISCTOTAL")
+                .find(|&(k, _)| k.to_lowercase() == "disctotal" || k.to_lowercase() == "totaldiscs")
                 .and_then(|(_, d)| u8::from_str_radix(d, 10).ok())
                 .map(|d| MetadataValue::DiscCount(d)),
-            TrackTitle => md.iter().find(|&(k, _)| k == &"title" || k == &"TITLE").map(|(_, t)| MetadataValue::TrackTitle(t)),
+            TrackTitle => md.iter().find(|&(k, _)| k.to_lowercase() == "title").map(|(_, t)| MetadataValue::TrackTitle(t)),
             TrackNumber => md
                 .iter()
-                .find(|&(k, _)| k == &"track" || k == &"TRACKNUMBER")
+                .find(|&(k, _)| k.to_lowercase() == "track" || k.to_lowercase() == "tracknumber")
                 .and_then(|(_, t)| u16::from_str_radix(t, 10).ok())
                 .map(|t| MetadataValue::TrackNumber(t)),
             TrackCount => md
                 .iter()
-                .find(|&(k, _)| k == &"TRACKTOTAL" || k == &"TOTALTRACKS")
+                .find(|&(k, _)| k.to_lowercase() == "tracktotal" || k.to_lowercase() == "totaltracks")
                 .and_then(|(_, t)| u16::from_str_radix(t, 10).ok())
                 .map(|t| MetadataValue::TrackCount(t)),
             _ => None

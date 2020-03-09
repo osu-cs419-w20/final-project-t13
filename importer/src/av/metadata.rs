@@ -141,6 +141,10 @@ impl<'a> Track<'a> {
     pub fn duration(&self) -> i64 {
         self.ctx.duration()
     }
+
+    pub fn path_str(&self) -> Option<&str> {
+        self.ctx.path().to_str()
+    }
 }
 
 #[derive(Debug)]

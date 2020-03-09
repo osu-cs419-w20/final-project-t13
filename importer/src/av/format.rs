@@ -3,7 +3,7 @@
 use std::cell::Cell;
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::ptr;
 
 use super::error::AVError;
@@ -16,6 +16,7 @@ pub enum Format {
 
 pub struct AVFormatContext {
     ctx: *mut ffmpeg_sys::AVFormatContext,
+    path: PathBuf,
     stream_info_read: Cell<bool>,
 }
 
@@ -41,6 +42,7 @@ impl AVFormatContext {
 
         let context = AVFormatContext {
             ctx,
+            path: p.as_ref().to_path_buf(),
             stream_info_read: Cell::new(false),
         };
 
@@ -114,6 +116,10 @@ impl AVFormatContext {
 
     pub fn duration(&self) -> i64 {
         unsafe { (*self.ctx).duration / (ffmpeg_sys::AV_TIME_BASE as i64) }
+    }
+
+    pub fn path(&self) -> &Path {
+        &self.path
     }
 }
 

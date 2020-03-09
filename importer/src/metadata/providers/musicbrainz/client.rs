@@ -79,15 +79,19 @@ impl Client {
         Ok(res)
     }
 
-    pub async fn get_cover_art(&self, release_id: &str) -> Result<CoverArtResponse> {
+    pub async fn get_cover_art(&self, release_id: &str) -> Result<Option<CoverArtResponse>> {
         let url = format!("{}/release/{}", CA_API_BASE_URL, release_id);
         let res = self.http.get(&url)
             .query(&[("inc", "url-rels")])
             .send()
             .await?;
-        let buf = res.bytes().await?;
-        let res: CoverArtResponse = serde_json::from_reader(buf.as_ref()).unwrap();
-        Ok(res)
+        if res.status().is_success() {
+            let buf = res.bytes().await?;
+            let res: CoverArtResponse = serde_json::from_reader(buf.as_ref()).unwrap();
+            Ok(Some(res))
+        } else {
+            Ok(None)
+        }
     }
 
     fn default_headers() -> HeaderMap {

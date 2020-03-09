@@ -1,5 +1,6 @@
 use std::pin::Pin;
 
+use regex::Regex;
 use reqwest::header::{self, HeaderMap};
 use serde::Deserialize;
 
@@ -122,15 +123,21 @@ fn build_query_from_track(track: &crate::av::metadata::Track<'_>) -> String {
         .filter_map(|m| {
             use crate::av::metadata::MetadataValue::*;
             match m {
-                Some(Album(a)) => Some(format!("release:{}", a)),
-                Some(Artist(a)) => Some(format!("(artist:{0} OR artistname:{0} OR creditname:{0})", a)),
-                Some(TrackTitle(t)) => Some(format!("(recording:{0} OR recordingaccent:{0})", t)),
+                Some(Album(a)) => Some(format!("release:{}", escape_query(a))),
+                Some(Artist(a)) => Some(format!("(artist:{0} OR artistname:{0} OR creditname:{0})", escape_query(a))),
+                Some(TrackTitle(t)) => Some(format!("(recording:{0} OR recordingaccent:{0})", escape_query(t))),
                 Some(TrackNumber(n)) => Some(format!("tnum:{}", n)),
-                Some(TrackCount(c)) => Some(format!("tracks:{}", c)),
+                Some(TrackCount(c)) => Some(format!("(tracks:{0} OR tracksrelease:{0})", c)),
                 Some(TrackLength(l)) => Some(format!("dur:{}", (*l as u64) * 1000)),
                 _ => None,
             }
         })
         .collect::<Vec<String>>()
         .join(" AND ")
+}
+
+fn escape_query(s: &str) -> String {
+    // Remove all non-{letter, number, space} characters
+    let r = Regex::new(r"[^\p{L}\p{Nd} ]").unwrap();
+    r.replace_all(s, " ").to_owned().to_string()
 }

@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS artist (
   id SERIAL NOT NULL,
   mbid TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
+  image_url TEXT,
   PRIMARY KEY (id)
 );
 

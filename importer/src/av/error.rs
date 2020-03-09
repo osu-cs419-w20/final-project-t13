@@ -7,7 +7,6 @@ use super::utils;
 pub enum AVError {
     EncodingError(Option<str::Utf8Error>),
     PathNulByteError(ffi::NulError),
-    AllocationError(&'static str),
     AVLibraryError(String),
     NullPointer(String),
     UnknownFormat,
@@ -30,7 +29,6 @@ impl std::fmt::Display for AVError {
         match self {
             EncodingError(_) => write!(fmt, "encoding error converting raw string"),
             PathNulByteError(_) => write!(fmt, "provided path contains a nul byte"),
-            AllocationError(t) => write!(fmt, "failed to allocate memory for {}", t),
             AVLibraryError(e) => write!(fmt, "av library error: {}", e),
             NullPointer(_) => write!(fmt, "unexpected null pointer"),
             UnknownFormat => write!(fmt, "unknown format"),

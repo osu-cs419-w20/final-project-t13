@@ -1,7 +1,7 @@
 use std::env;
 
 use tokio::time::{delay_for, Duration};
-use deadpool_postgres::{Config, Manager, Pool};
+use deadpool_postgres::{Config, Pool};
 use tokio_postgres::{NoTls};
 use walkdir::WalkDir;
 
@@ -78,7 +78,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn existing_artist_album(album_mbid: &str, artist_mbid: &str, pool: deadpool_postgres::Pool)
+async fn existing_artist_album(album_mbid: &str, artist_mbid: &str, pool: Pool)
     -> Result<(Option<i32>, Option<i32>), Box<dyn std::error::Error>>
 {
     let client = pool.get().await?;
@@ -99,7 +99,7 @@ async fn existing_artist_album(album_mbid: &str, artist_mbid: &str, pool: deadpo
     }
 }
 
-fn create_pool() -> Result<deadpool_postgres::Pool, Box<dyn std::error::Error>> {
+fn create_pool() -> Result<Pool, Box<dyn std::error::Error>> {
     let cfg = Config {
         user: env::var("POSTGRES_USER").ok(),
         password: env::var("POSTGRES_PW").ok(),

@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::cell::Cell;
 use std::convert::TryInto;
 use std::path::Path;
 
@@ -113,7 +112,7 @@ impl<'a> Track<'a> {
             super::format::Format::FLAC => Box::new(FLAC),
             super::format::Format::MP3 => Box::new(MP3),
         };
-        let mut raw_metadata = ctx.metadata()?;
+        let raw_metadata = ctx.metadata()?;
         let metadata = TrackMetadata::from_raw_metadata(&raw_metadata, format.as_ref());
 
         let mut track = Track {

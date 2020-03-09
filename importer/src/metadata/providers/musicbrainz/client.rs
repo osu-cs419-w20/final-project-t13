@@ -1,5 +1,3 @@
-use std::pin::Pin;
-
 use regex::Regex;
 use reqwest::header::{self, HeaderMap};
 use serde::Deserialize;

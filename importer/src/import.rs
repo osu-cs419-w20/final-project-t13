@@ -124,7 +124,6 @@ impl<'a> TrackImporter<'a> {
         let res = self.mb_client.search_recordings(&self.track).await.unwrap();
         match res.results {
             SearchResult::Recordings(r) => r,
-            _ => panic!("unexpected deserialization result"),
         }
     }
 
@@ -133,7 +132,6 @@ impl<'a> TrackImporter<'a> {
         else if releases.len() == 1 { return Some(releases[0].clone()); }
 
         let md = self.track.metadata();
-        let on_cd = self.track.guess_is_cd();
         releases.iter()
             .map(|r| {
                 let mut score = 0;

@@ -2,7 +2,7 @@
 
 use std::cell::Cell;
 use std::collections::HashMap;
-use std::ffi::{CStr, CString};
+use std::ffi::CString;
 use std::path::{Path, PathBuf};
 use std::ptr;
 
@@ -80,15 +80,13 @@ impl AVFormatContext {
     }
 
     pub fn determine_format(&self) -> super::Result<Format> {
-        let mut stream = ptr::null();
-        let mut params = ptr::null();
         let mut candidates = Vec::new();
 
         unsafe {
             self.find_stream_info()?;
             for i in 0..(*self.ctx).nb_streams {
-                stream = *(*self.ctx).streams.offset(i as isize);
-                params = (*stream).codecpar;
+                let stream = *(*self.ctx).streams.offset(i as isize);
+                let params = (*stream).codecpar;
 
                 if (*params).codec_type != ffmpeg_sys::AVMediaType_AVMEDIA_TYPE_AUDIO {
                     continue;

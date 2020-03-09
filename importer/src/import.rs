@@ -142,10 +142,6 @@ impl<'a> TrackImporter<'a> {
                     _ => {}
                 }
 
-                // For now, heavily prefer CD releases
-                let not_cd_penalty = !r.media.iter().any(|m| m.format == Some("CD".to_string()));
-                if not_cd_penalty { score += 10; }
-
                 match r.artist_credit.as_ref() {
                     Some(ac) => {
                         score += ac.iter()
@@ -159,6 +155,28 @@ impl<'a> TrackImporter<'a> {
                             .unwrap_or(0);
                     }
                     None => {}
+                }
+
+                match md.track_count {
+                    Some(MetadataValue::TrackCount(c)) => {
+                        let count_match = r.media.iter().any(|m| match m.track_count {
+                            Some(mc) => c == mc,
+                            None => false,
+                        });
+                        if !count_match { score += 5 };
+                    }
+                    _ => {}
+                }
+
+                match md.track_number {
+                    Some(MetadataValue::TrackNumber(n)) => {
+                        let num_match = r.media.iter().any(|m| match m.track_offset {
+                            Some(o) => (o + 1) == n,
+                            None => false,
+                        });
+                        if !num_match { score += 5 };
+                    }
+                    _ => {}
                 }
 
                 if r.country != Some("US".to_string()) {

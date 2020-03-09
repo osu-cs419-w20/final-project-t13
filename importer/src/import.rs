@@ -1,3 +1,4 @@
+use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 use regex::Regex;
 
 use crate::av::metadata::{MetadataValue, Track as AVTrack};
@@ -60,12 +61,16 @@ impl<'a> TrackImporter<'a> {
                 m.track.first().as_ref().map(|t| u16::from_str_radix(&t.number, 10).unwrap()).unwrap()
             })
             .unwrap();
+        let file_location = self.track.path_str().unwrap().to_string();
+        let file_location = file_location.as_str().trim_start_matches("/Users/jason/j/tmp/dtst");
+        const FRAGMENT: &AsciiSet = &CONTROLS.add(b' ').add(b'"').add(b'<').add(b'>').add(b'`');
         let track = Track {
             mbid: rec.id.unwrap(),
             title: rec.title.unwrap(),
             position,
             bitrate: self.track.bit_rate(),
             duration: self.track.duration(),
+            file_location: utf8_percent_encode(&format!("/static{}", file_location), FRAGMENT).to_string(),
         };
 
         (artist, album, track)

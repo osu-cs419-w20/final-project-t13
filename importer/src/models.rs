@@ -19,4 +19,5 @@ pub struct Track {
     pub title: String,
     pub bitrate: i64,
     pub duration: i64,
+    pub file_location: String,
 }

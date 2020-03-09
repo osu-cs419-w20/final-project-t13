@@ -126,6 +126,10 @@ pub struct Medium {
     pub position: u16,
     pub format: Option<String>,
     pub track: Vec<Track>,
+    #[serde(rename = "track-count")]
+    pub track_count: Option<u16>,
+    #[serde(rename = "track-offset")]
+    pub track_offset: Option<u16>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 use std::cell::Cell;
+use std::convert::TryInto;
 use std::path::Path;
+
+use walkdir::WalkDir;
 
 use super::format::AVFormatContext;
 
@@ -110,13 +113,20 @@ impl<'a> Track<'a> {
             super::format::Format::FLAC => Box::new(FLAC),
             super::format::Format::MP3 => Box::new(MP3),
         };
-        let raw_metadata = ctx.metadata()?;
+        let mut raw_metadata = ctx.metadata()?;
         let metadata = TrackMetadata::from_raw_metadata(&raw_metadata, format.as_ref());
-        Ok(Track {
+
+        let mut track = Track {
             ctx,
             metadata,
             format,
-        })
+        };
+
+        if track.metadata.track_count.is_none() {
+            track.metadata.track_count = track.guess_track_count().map(|c| MetadataValue::TrackCount(c));
+        }
+
+        Ok(track)
     }
 
     pub fn new<P: AsRef<Path>>(p: P) -> super::Result<Track<'a>> {
@@ -144,6 +154,30 @@ impl<'a> Track<'a> {
 
     pub fn path_str(&self) -> Option<&str> {
         self.ctx.path().to_str()
+    }
+
+    pub fn guess_track_count(&self) -> Option<u16> {
+        match self.ctx.path().parent() {
+            Some(path) => {
+                WalkDir::new(path)
+                    .into_iter()
+                    .filter_map(Result::ok)
+                    .filter(|e| !e.file_type().is_dir())
+                    .filter(|e| match e.path().extension() {
+                        Some(ext) => {
+                            match ext.to_str() {
+                                Some("flac") | Some("mp3") => true,
+                                _ => false,
+                            }
+                        }
+                        None => false,
+                    })
+                    .count()
+                    .try_into()
+                    .ok()
+            }
+            None => None
+        }
     }
 }
 

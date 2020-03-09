@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS artist (
+  id SERIAL NOT NULL,
+  mbid TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  PRIMARY KEY (id)
+);
+

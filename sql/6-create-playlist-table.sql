@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS playlist (
+  id SERIAL NOT NULL,
+  name TEXT NOT NULL,
+  PRIMARY KEY (id)
+);
+

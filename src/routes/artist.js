@@ -8,12 +8,17 @@ import { fetchArtistIfNeeded } from '../actions/artists'
 
 import Page from '../components/page'
 import ArtistPage from '../pages/artist'
+import NotFoundPage from '../pages/not-found'
 
 import { playAlbum } from '../actions/music-player'
 
 const ArtistRoute = (props) => {
   const { artistId } = useParams()
   const id = parseInt(artistId, 10)
+
+  if (isNaN(id)) {
+    return <NotFoundPage {...props} />
+  }
 
   const artistWithAlbums = useSelector(getArtist(id, ['albums']))
   const { albums, ...artist } = artistWithAlbums || {}

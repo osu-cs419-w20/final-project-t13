@@ -11,6 +11,8 @@ import PlaylistRoute from './routes/playlist'
 import MusicPlayer from './components/music-player'
 import Sidebar from './components/sidebar'
 
+import NotFoundPage from './pages/not-found'
+
 const App = () => {
   return (
     <div>
@@ -24,6 +26,7 @@ const App = () => {
         <Route exact path="/artists" component={ArtistsRoute} />
         <Route exact path="/playlists/:playlistId" component={PlaylistRoute} />
         <Route exact path="/" component={HomeRoute} />
+        <Route component={NotFoundPage} />
       </Switch>
     </div>
   )

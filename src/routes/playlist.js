@@ -10,12 +10,17 @@ import { addTrackToPlaylist } from '../actions/playlists'
 import AddToPlaylistModal from '../components/add-to-playlist-modal'
 import Page from '../components/page'
 import PlaylistPage from '../pages/playlist'
+import NotFoundPage from '../pages/not-found'
 
 import { playTrack, queueTracks } from '../actions/music-player'
 
 const PlaylistRoute = (props) => {
   const { playlistId } = useParams()
   const id = parseInt(playlistId, 10)
+
+  if (isNaN(id)) {
+    return <NotFoundPage {...props} />
+  }
 
   const playlist = useSelector(getPlaylist(id))
   const playlists = useSelector(getPlaylists)

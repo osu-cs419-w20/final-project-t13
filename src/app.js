@@ -5,6 +5,7 @@ import AlbumRoute from './routes/album'
 import AlbumsRoute from './routes/albums'
 import ArtistRoute from './routes/artist'
 import ArtistsRoute from './routes/artists'
+import HomeRoute from './routes/home'
 import PlaylistRoute from './routes/playlist'
 
 import MusicPlayer from './components/music-player'
@@ -22,6 +23,7 @@ const App = () => {
         <Route exact path="/artists/:artistId" component={ArtistRoute} />
         <Route exact path="/artists" component={ArtistsRoute} />
         <Route exact path="/playlists/:playlistId" component={PlaylistRoute} />
+        <Route exact path="/" component={HomeRoute} />
       </Switch>
     </div>
   )

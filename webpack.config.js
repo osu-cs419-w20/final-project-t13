@@ -12,10 +12,18 @@ module.exports = {
     disableHostCheck: true,
     host: '0.0.0.0',
     port: 8080,
+    historyApiFallback: true,
     watchOptions: {
       aggregateTimeout: 500,
       poll: 1000
+    },
+    proxy: {
+      '/api': {
+        target: 'http://docker.for.mac.localhost:3030',
+        pathRewrite: {'^/api' : ''},
+      }
     }
+
   },
   module: {
     rules: [
@@ -34,6 +42,20 @@ module.exports = {
             loader: 'css-loader',
             options: {
               modules: true
+            }
+          }
+        ]
+      },
+      {
+        test: /\.svg$/,
+        use: [
+          {
+            loader: 'babel-loader'
+          },
+          {
+            loader: 'react-svg-loader',
+            options: {
+              jsx: true
             }
           }
         ]

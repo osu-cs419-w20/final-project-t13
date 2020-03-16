@@ -1,0 +1,31 @@
+.table {
+  width: 100%;
+}
+
+.tableHead > tr {
+  border-bottom: 1px solid #5e5e5e;
+}
+
+.tableHead th {
+  padding: 10px 20px;
+  text-align: left;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.tableRow {
+  font-size: 1.1em;
+  transition: background-color 0.35s;
+}
+
+.tableRow:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.tableRow > td {
+  position: relative;
+  text-align: left;
+  padding: 24px 20px;
+  border-bottom: 1px solid #5e5e5e;
+  vertical-align: middle;
+}

@@ -1,0 +1,32 @@
+.wrapper {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  width: 100%;
+}
+
+.artistsGrid {
+  max-width: 1200px;
+}
+
+.artist {
+  max-width: 275px;
+  margin-bottom: 55px;
+}
+
+.artistInfo {
+  display: flex;
+  flex-flow: column;
+  align-items: flex-start;
+  width: calc(100% - 25px);
+  left: 12.5px;
+  margin-top: 5px;
+}
+
+.link {
+  font-weight: 500;
+}
+
+.artistLink {
+  color: white;
+}

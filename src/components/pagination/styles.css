@@ -1,0 +1,30 @@
+.pagination {
+  display: flex;
+  align-items: center;
+}
+
+.pageNumber {
+  font-size: 18px;
+  font-weight: 300;
+  margin-left: 30px;
+  margin-right: 30px;
+}
+
+.pagination {
+  margin-bottom: 40px;
+}
+
+.pageLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pageIcon {
+  fill: #7a7a7a;
+  transition: fill 0.25s;
+}
+
+.pageIcon:hover {
+  fill: #e0dede;
+}

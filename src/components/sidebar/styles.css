@@ -1,0 +1,105 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 225px;
+  z-index: 9;
+  height: calc(100vh - 125px);
+  background-color: #181D1D;
+  border-right: 1px solid black;
+}
+
+.sidebarSection {
+  margin-top: 40px;
+}
+
+.sidebarSection:first-of-type {
+  margin-top: 15px;
+}
+
+.sidebarSectionTitle {
+  font-weight: 700;
+  font-size: 0.95em;
+  user-select: none;
+  margin: 0px 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(115, 115, 115, 0.8);
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+
+.navLink {
+  font-weight: 300;
+  font-size: 0.85em;
+  display: block;
+  transition: color 0.35s;
+}
+
+.playlistMenuLink,
+.navLink {
+  padding: 5px 10px;
+  transition: background-color 0.35s;
+}
+
+.playlistMenuLink:hover,
+.playlistMenuLink:global(.active),
+.navLink:hover,
+.navLink:global(.active) {
+  background-color: #353245;
+}
+
+.playlistMenuLink {
+  display: flex;
+  align-items: center;
+}
+
+.playlistIcon {
+  width: 17px;
+  height: 17px;
+  fill: rgba(80, 112, 112, 1);
+  background-color: #1E2828;
+  border-radius: 3px;
+  padding: 4px;
+  transition: fill 0.35s;
+}
+
+.playlistMenuLink:hover > .playlistIcon,
+.playlistMenuLink:global(.active) > .playlistIcon {
+  fill: rgba(128, 189, 191, 1);
+}
+
+.playlistName {
+  font-weight: 300;
+  font-size: 0.85em;
+  display: block;
+  margin-left: 6px;
+  color: #7a7a7a;
+  transition: color 0.35s;
+}
+
+.playlistMenuLink:hover > .playlistName,
+.playlistMenuLink:global(.active) > .playlistName,
+.navLink:global(.active) {
+  color: #e0dede;
+}
+
+.createPlaylistForm {
+  padding: 0px 10px;
+}
+
+.createPlaylistForm input[type=text] {
+  width: 100%;
+  border: none;
+  padding: 10px;
+  font-weight: 300;
+  font-size: 0.9em;
+  background-color: #1E2828;
+}
+
+.createPlaylistForm .error {
+  font-weight: 300;
+  margin-top: 5px;
+  color: #bf1408;
+  font-size: 0.7em;
+  user-select: none;
+}

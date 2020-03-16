@@ -1,0 +1,154 @@
+.wrapper {
+  padding-bottom: 100px;
+}
+
+.wrapper::after {
+  content: ' ';
+  display: block;
+  height: 0;
+  clear: both;
+}
+
+.leftColumn,
+.rightColumn {
+  padding-top: 100px;
+}
+
+.leftColumn {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  position: fixed;
+  width: 30%;
+}
+
+.playlistInfo {
+  width: 300px;
+}
+
+.playlistLabel {
+  color: #7a7a7a;
+  font-weight: 500;
+  font-size: 0.9em;
+  user-select: none;
+}
+
+.albumImage {
+  width: 45px;
+  height: 45px;
+}
+
+.tableTrackAlbumLink {
+  font-weight: 300;
+  font-size: 0.85em;
+  margin-top: 2px;
+}
+
+.tableTrackArtistLink {
+  font-weight: 300;
+  font-size: 0.95em;
+}
+
+.actions {
+  margin-top: 20px;
+}
+
+.actionButton {
+  border: none;
+  background: none;
+  cursor: pointer;
+  background-color: rgba(252, 103, 3, 1);
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  margin-right: 10px;
+  font-weight: 700;
+  transition: background-color 0.25s;
+}
+
+.actionButton:last-of-type {
+  margin-right: 0;
+}
+
+.actionButton:hover {
+  background-color: rgba(252, 103, 3, 0.6);
+}
+
+.metadata {
+  display: flex;
+  width: 100%;
+  margin-top: 25px;
+  text-transform: uppercase;
+  font-size: 0.95em;
+}
+
+.metadataItem {
+  color: #7a7a7a;
+}
+
+.metadataItem::after {
+  margin-left: 5px;
+  margin-right: 5px;
+  content: '-';
+}
+
+.metadataItem:last-of-type::after {
+  content: '';
+  margin: 0;
+}
+
+.rightColumn {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  padding-right: 100px;
+  padding-bottom: 40px;
+  width: 65%;
+  float: right;
+}
+
+.rightColumn button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+.rightColumnTitle {
+  display: block;
+  width: 100%;
+  font-weight: 500;
+  font-size: 1.4vw;
+}
+
+.albumHeader {
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.playlistName {
+  font-size: 3vw;
+  font-weight: 500;
+  margin-top: 2px;
+  color: white;
+}
+
+.artistLink {
+  font-size: 1.4em;
+  font-weight: 700;
+}
+
+.tableButton {
+  display: flex;
+}
+
+.tableIcon {
+  fill: #7a7a7a;
+  transition: fill 0.25s;
+}
+
+.tableIcon:hover {
+  fill: #e0dede;
+}

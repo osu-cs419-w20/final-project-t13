@@ -1,0 +1,51 @@
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+* {
+  color: #e0dede;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+a {
+  color: #7a7a7a;
+  text-decoration: none;
+  transition: color 0.25s;
+}
+
+a:hover {
+  color: #e0dede;
+}
+
+main {
+  position: absolute;
+  left: 225px;
+  width: calc(100vw - 225px);
+  height: calc(100vh - 125px);
+  overflow-y: auto;
+  background-image: linear-gradient(0deg, rgba(19,27,27,1) 0%, rgba(32,68,68,1) 75%);
+}
+
+:global(.react-contextmenu) {
+  background-color: #1d1c24;
+  z-index: 15;
+  box-shadow: -2px -1px 3px 2px rgba(0, 0, 0, 0.4);
+}
+
+:global(.react-contextmenu-item) {
+  font-weight: 300;
+  font-size: 0.8em;
+  padding: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  color: white;
+}
+
+:global(.react-contextmenu-item:hover) {
+  background-color: #3a3842;
+}

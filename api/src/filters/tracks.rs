@@ -16,7 +16,7 @@ pub(super) fn tracks_filters(db: DB)
 fn get_track_with_id_filter(db: DB)
     -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 {
-    warp::path!("track" / i32)
+    warp::path!("tracks" / i32)
         .and(warp::get())
         .and(super::db_filter(db))
         .and_then(get_track_with_id)

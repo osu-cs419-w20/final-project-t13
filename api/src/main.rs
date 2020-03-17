@@ -5,6 +5,7 @@ use std::env;
 use warp::Filter;
 
 mod db;
+mod encoding;
 mod error;
 mod filters;
 mod handlers;

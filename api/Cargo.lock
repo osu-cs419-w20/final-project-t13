@@ -5,6 +5,7 @@ name = "api"
 version = "0.1.0"
 dependencies = [
  "deadpool-postgres",
+ "percent-encoding",
  "serde",
  "serde_json",
  "tokio",

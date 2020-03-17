@@ -835,9 +835,9 @@ dependencies = [
 name = "importer"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "deadpool-postgres",
  "ffmpeg-sys",
- "percent-encoding 2.1.0",
  "regex",
  "reqwest",
  "rspotify",
@@ -1305,6 +1305,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e634590e8812c500088d88db721195979223dabb05149f43cb50931d0ff5865d"
 dependencies = [
  "bytes 0.5.4",
+ "chrono",
  "fallible-iterator",
  "postgres-protocol",
 ]

@@ -68,6 +68,7 @@ impl Client {
 
     pub async fn search_recordings(&self, track: &crate::av::metadata::Track<'_>) -> Result<SearchResponse> {
         let q = build_query_from_track(track);
+        println!("{}", q);
         let url = API_BASE_URL.to_string() + "/recording";
         let res = self.http.get(&url)
             .query(&[("query", q), ("fmt", "json".to_string())])
@@ -121,8 +122,8 @@ fn build_query_from_track(track: &crate::av::metadata::Track<'_>) -> String {
         .filter_map(|m| {
             use crate::av::metadata::MetadataValue::*;
             match m {
-                Some(Album(a)) => Some(format!("release:{}", escape_query(a))),
-                Some(Artist(a)) => Some(format!("(artist:{0} OR artistname:{0} OR creditname:{0})", escape_query(a))),
+                Some(Album(a)) => Some(format!("release:{}", escape_query(&normalize_album_title(&a)))),
+                Some(Artist(a)) => Some(format!("(artist:{0} OR artistname:{0} OR creditname:{0})", escape_query(&normalize_track_title(&a)))),
                 Some(TrackTitle(t)) => Some(format!("(recording:{0} OR recordingaccent:{0})", escape_query(t))),
                 Some(TrackNumber(n)) => Some(format!("tnum:{}", n)),
                 Some(TrackCount(c)) => Some(format!("(tracks:{0} OR tracksrelease:{0})", c)),
@@ -132,6 +133,16 @@ fn build_query_from_track(track: &crate::av::metadata::Track<'_>) -> String {
         })
         .collect::<Vec<String>>()
         .join(" AND ")
+}
+
+fn normalize_album_title(s: &str) -> String {
+    let r = Regex::new(r"(?i)(?:\[(Deluxe)\s+Edition\]|\((Deluxe)\s+Edition\))").unwrap();
+    r.replace_all(s, "").to_string()
+}
+
+fn normalize_track_title(s: &str) -> String {
+    let r = Regex::new(r"(?i)(\(feat\.?\s+.+?\))").unwrap();
+    r.replace_all(s, "").to_string()
 }
 
 fn escape_query(s: &str) -> String {

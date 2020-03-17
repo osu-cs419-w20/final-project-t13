@@ -18,7 +18,7 @@ pub struct Album {
 }
 
 // GET /albums(?page=X&limit=Y)
-pub async fn get_albums(opts: PaginationOptions, db: DB) -> Result<impl warp::Reply, warp::Rejection> {
+pub async fn get_albums(rels: RelationsOption, opts: PaginationOptions, db: DB) -> Result<impl warp::Reply, warp::Rejection> {
     let client = db.get().await?;
     let count = db.count_rows("album", &client).await.map_err(Error::from)?.unwrap_or(0);
     let (limit, page) = match (opts.limit.or(Some(15)), opts.page) {
@@ -34,24 +34,61 @@ pub async fn get_albums(opts: PaginationOptions, db: DB) -> Result<impl warp::Re
     };
     let offset = (page - 1) * limit as i64;
     let total_pages = (count as f64 / limit as f64).ceil() as i64;
-    let stmt = client.prepare("
-        SELECT A.id, A.mbid, A.title, A.artist_id, I.url as image_url
-        FROM album A
-        INNER JOIN album_image I
-            ON I.album_id = A.id
+
+    let rels = rels.relations.unwrap_or(BTreeSet::new());
+    let mut select_fields = vec!["R.id", "R.mbid", "R.title", "R.artist_id", "R.image_url"];
+    let mut joins = Vec::new();
+    let mut loading_artist = false;
+    for rel in rels {
+        use crate::filters::Relation;
+        match rel {
+            Relation::Artist => {
+                select_fields.extend_from_slice(&[
+                    "A.id",
+                    "A.mbid",
+                    "A.name",
+                    "A.image_url as artist_image_url",
+                ]);
+                joins.extend_from_slice(&[
+                    "INNER JOIN artist A ON A.id = R.artist_id",
+                ]);
+                loading_artist = true;
+            }
+            _ => {}
+        }
+    }
+    let select_fields = select_fields.as_slice().join(", ");
+    let joins = joins.as_slice().join("\n");
+    let q = format!("
+        SELECT {}
+        FROM album R
+        {}
+        ORDER BY title ASC
         LIMIT $1 OFFSET $2
-    ").await.map_err(Error::from)?;
+    ", select_fields, joins);
+    let stmt = client.prepare(&q).await.map_err(Error::from)?;
     let rows = client.query(&stmt, &[&limit, &offset]).await.map_err(Error::from)?;
     let mut albums = Vec::new();
 
     for row in rows {
+        let artist = if loading_artist {
+            Some(crate::handlers::artists::Artist {
+                id: row.get(5),
+                mbid: row.get(6),
+                name: row.get(7),
+                image_url: row.get(8),
+                albums: None,
+            })
+        } else {
+            None
+        };
         let album = Album {
             id: row.get(0),
             mbid: row.get(1),
             title: row.get(2),
             artist_id: row.get(3),
             image_url: row.get(4),
-            artist: None,
+            artist,
             tracks: None,
         };
         albums.push(album);

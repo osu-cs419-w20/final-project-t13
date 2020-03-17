@@ -18,6 +18,7 @@ fn get_albums_filter(db: DB)
 {
     warp::path!("albums")
         .and(warp::get())
+        .and(warp::query::<super::RelationsOption>())
         .and(warp::query::<super::PaginationOptions>())
         .and(super::db_filter(db))
         .and_then(get_albums)

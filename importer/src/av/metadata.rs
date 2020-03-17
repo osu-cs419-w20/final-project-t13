@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::convert::TryInto;
 use std::path::Path;
 
+use regex::Regex;
 use walkdir::WalkDir;
 
 use super::format::AVFormatContext;
@@ -100,6 +101,12 @@ impl TrackFormat for MP3 {
     }
 }
 
+#[derive(Debug)]
+pub enum MediaFormat {
+    CD,
+    Digital,
+}
+
 pub struct Track<'a> {
     ctx: AVFormatContext,
     metadata: TrackMetadata<'a>,
@@ -141,6 +148,28 @@ impl<'a> Track<'a> {
         let md = self.metadata();
         let has_disc_metadata = md.disc.is_some() || md.disc_count.is_some();
         has_disc_metadata
+    }
+
+    pub fn guess_media_format(&self) -> Option<MediaFormat> {
+        let fmt = self.ctx.path().parent().and_then(|p| p.to_str()).and_then(|path| {
+            let reg = Regex::new(r"^.+?(?:\[(CD|WEB)(?:[\s0-9A-Z- ]*)\]|\((CD|WEB)(?:[\s0-9A-Z- ]*)\)).+?$").unwrap();
+            match reg.captures(path) {
+                Some(caps) => match caps.get(1).unwrap().as_str() {
+                    "CD" => Some(MediaFormat::CD),
+                    "WEB" => Some(MediaFormat::Digital),
+                    _ => None,
+                }
+                _ => None,
+            }
+        });
+
+        if fmt.is_some() {
+            fmt
+        } else if self.guess_is_cd() {
+            Some(MediaFormat::CD)
+        } else {
+            None
+        }
     }
 
     pub fn bit_rate(&self) -> i64 {

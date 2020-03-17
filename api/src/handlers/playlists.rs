@@ -14,10 +14,18 @@ pub struct Playlist {
     tracks: Option<Vec<PlaylistTrack>>,
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PlaylistTrack {
-    track: super::tracks::Track,
+    id: i32,
+    title: String,
+    duration: i32,
     position: i32,
+    album_id: i32,
+    album_title: String,
+    album_image: String,
+    artist_id: i32,
+    artist_name: String,
 }
 
 #[derive(Deserialize)]
@@ -26,6 +34,7 @@ pub struct NewPlaylist {
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AddToPlaylist {
     track_id: i32,
 }
@@ -81,25 +90,26 @@ pub async fn get_playlist_with_id(id: i32, rels: RelationsOption, db: DB) -> Res
     let mut joins = Vec::new();
 
     let mut loading_tracks = false;
-
     for rel in rels {
         use crate::filters::Relation;
         match rel {
             Relation::Tracks => {
                 select_fields.extend_from_slice(&[
                     "T.id",
-                    "T.mbid",
                     "T.title",
-                    "T.position",
-                    "T.bit_rate",
                     "T.duration",
-                    "T.file_location",
-                    "T.album_id",
-                    "PT.position AS playlist_position",
+                    "PT.position",
+                    "R.id",
+                    "R.title",
+                    "R.image_url",
+                    "A.id",
+                    "A.name",
                 ]);
                 joins.extend_from_slice(&[
-                    "INNER JOIN playlist_track PT ON PT.playlist_id = P.id",
-                    "INNER JOIN track T ON T.id = PT.track_id",
+                    "LEFT OUTER JOIN playlist_track PT ON PT.playlist_id = P.id",
+                    "LEFT OUTER JOIN track T ON T.id = PT.track_id",
+                    "LEFT OUTER JOIN album R ON R.id = T.album_id",
+                    "LEFT OUTER JOIN artist A ON A.id = R.artist_id",
                 ]);
                 loading_tracks = true;
             }
@@ -123,26 +133,24 @@ pub async fn get_playlist_with_id(id: i32, rels: RelationsOption, db: DB) -> Res
     if loading_tracks {
         let mut playlist_tracks = Vec::new();
         for row in &rows {
-            let track = super::tracks::Track {
-                id: row.get(2),
-                mbid: row.get(3),
-                title: row.get(4),
+            let track = PlaylistTrack {
+                id: match row.try_get(2) {
+                    Ok(id) => id,
+                    Err(_) => break,
+                },
+                title: row.get(3),
+                duration: row.get(4),
                 position: row.get(5),
-                bit_rate: row.get(6),
-                duration: row.get(7),
-                file_location: row.get(8),
-                album_id: row.get(9),
+                album_id: row.get(6),
+                album_title: row.get(7),
+                album_image: row.get(8),
+                artist_id: row.get(9),
+                artist_name: row.get(10),
             };
-            let pt = PlaylistTrack {
-                track,
-                position: row.get(10),
-            };
-            playlist_tracks.push(pt);
+            playlist_tracks.push(track);
         }
 
-        if !playlist_tracks.is_empty() {
-            tracks = Some(playlist_tracks);
-        }
+        tracks = Some(playlist_tracks);
     }
 
     let row = &rows[0];
@@ -155,7 +163,7 @@ pub async fn get_playlist_with_id(id: i32, rels: RelationsOption, db: DB) -> Res
     Ok(Box::new(warp::reply::json(&playlist)))
 }
 
-pub async fn add_to_playlist(id: i32, t: AddToPlaylist, db: DB) -> Result<impl warp::Reply, warp::Rejection> {
+pub async fn add_to_playlist(id: i32, t: AddToPlaylist, db: DB) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
     let client = db.get().await?;
     let stmt = client.prepare("
         SELECT MAX(position) FROM playlist_track WHERE playlist_id = $1
@@ -169,5 +177,31 @@ pub async fn add_to_playlist(id: i32, t: AddToPlaylist, db: DB) -> Result<impl w
     ").await.map_err(Error::from)?;
     client.query(&stmt, &[&id, &t.track_id, &next_pos]).await.map_err(Error::from)?;
 
-    Ok(warp::reply::with_status(warp::reply(), StatusCode::CREATED))
+    let stmt = client.prepare("
+        SELECT T.id, T.title, T.duration, PT.position, R.id, R.title, R.image_url, A.id, A.name
+        FROM track T
+        INNER JOIN playlist_track PT ON PT.playlist_id = $1 AND PT.track_id = T.id
+        INNER JOIN album R ON R.id = T.album_id
+        INNER JOIN artist A ON A.id = R.artist_id
+    ").await.map_err(Error::from)?;
+    let rows = client.query(&stmt, &[&id]).await.map_err(Error::from)?;
+
+    if rows.is_empty() {
+        return Ok(Box::new(warp::reply::with_status(warp::reply(), StatusCode::INTERNAL_SERVER_ERROR)));
+    }
+
+    let row = &rows[0];
+    let track = PlaylistTrack {
+        id: row.get(0),
+        title: row.get(1),
+        duration: row.get(2),
+        position: row.get(3),
+        album_id: row.get(4),
+        album_title: row.get(5),
+        album_image: row.get(6),
+        artist_id: row.get(7),
+        artist_name: row.get(8),
+    };
+
+    Ok(Box::new(warp::reply::with_status(warp::reply::json(&track), StatusCode::CREATED)))
 }

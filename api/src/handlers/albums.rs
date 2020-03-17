@@ -108,8 +108,8 @@ pub async fn get_albums(rels: RelationsOption, opts: PaginationOptions, db: DB) 
 pub async fn get_album_with_id(id: i32, rels: RelationsOption, db: DB) -> Result<impl warp::Reply, warp::Rejection> {
     let client = db.get().await?;
     let rels = rels.relations.unwrap_or(BTreeSet::new());
-    let mut select_fields = vec!["A.id", "A.mbid", "A.title", "A.artist_id", "I.url as image_url"];
-    let mut joins = vec!["INNER JOIN album_image I ON I.album_id = A.id"];
+    let mut select_fields = vec!["A.id", "A.mbid", "A.title", "A.artist_id", "A.image_url"];
+    let mut joins = Vec::new();
     let mut loading_artist = false;
     let mut loading_tracks = false;
 
@@ -121,11 +121,10 @@ pub async fn get_album_with_id(id: i32, rels: RelationsOption, db: DB) -> Result
                     "C.id",
                     "C.mbid",
                     "C.name",
-                    "CI.url as artist_image_url",
+                    "C.image_url as artist_image_url",
                 ]);
                 joins.extend_from_slice(&[
                     "INNER JOIN artist C ON C.id = A.artist_id",
-                    "LEFT OUTER JOIN artist_image CI ON CI.artist_id = C.id",
                 ]);
                 loading_artist = true;
             }
@@ -180,6 +179,8 @@ pub async fn get_album_with_id(id: i32, rels: RelationsOption, db: DB) -> Result
                 duration: row.get(10 + offset),
                 file_location: row.get(11 + offset),
                 album_id: row.get(12 + offset),
+                album: None,
+                artist: None,
             };
             tracks_vec.push(track);
         }

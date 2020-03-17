@@ -32,10 +32,9 @@ pub async fn get_artists(opts: PaginationOptions, db: DB) -> Result<impl warp::R
     let offset = (page - 1) * limit as i64;
     let total_pages = (count as f64 / limit as f64).ceil() as i64;
     let stmt = client.prepare("
-        SELECT A.id, A.mbid, A.name, I.url as image_url
-        FROM artist A
-        INNER JOIN artist_image I
-            ON I.artist_id = A.id
+        SELECT id, mbid, name, image_url
+        FROM artist
+        ORDER BY name ASC
         LIMIT $1 OFFSET $2
     ").await.map_err(Error::from)?;
     let rows = client.query(&stmt, &[&limit, &offset]).await.map_err(Error::from)?;
@@ -66,8 +65,8 @@ pub async fn get_artists(opts: PaginationOptions, db: DB) -> Result<impl warp::R
 pub async fn get_artist_with_id(id: i32, rels: RelationsOption, db: DB) -> Result<impl warp::Reply, warp::Rejection> {
     let client = db.get().await?;
     let rels = rels.relations.unwrap_or(BTreeSet::new());
-    let mut select_fields = vec!["A.id", "A.mbid", "A.name", "I.url as image_url"];
-    let mut joins = vec!["INNER JOIN artist_image I ON I.artist_id = A.id"];
+    let mut select_fields = vec!["A.id", "A.mbid", "A.name", "A.image_url"];
+    let mut joins = Vec::new();
 
     let mut loading_albums = false;
 
@@ -80,11 +79,10 @@ pub async fn get_artist_with_id(id: i32, rels: RelationsOption, db: DB) -> Resul
                     "R.mbid",
                     "R.title",
                     "R.artist_id",
-                    "RI.url as album_image_url"
+                    "R.image_url as album_image_url"
                 ]);
                 joins.extend_from_slice(&[
                     "LEFT OUTER JOIN album R ON R.artist_id = A.id",
-                    "LEFT OUTER JOIN album_image RI ON RI.album_id = R.id",
                 ]);
                 loading_albums = true;
             }

@@ -34,6 +34,7 @@ pub struct ArtistCredit {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Recording {
     pub id: Option<String>,
+    pub disambiguation: Option<String>,
     pub title: Option<String>,
     #[serde(rename = "artist-credit")]
     pub artist_credit: Vec<ArtistCredit>,
@@ -97,11 +98,14 @@ impl<'de> Deserialize<'de> for ReleaseStatus {
 pub struct Release {
     pub id: String,
     pub title: String,
+    pub disambiguation: Option<String>,
     #[serde(rename = "artist-credit")]
     pub artist_credit: Option<Vec<ArtistCredit>>,
     pub date: Option<String>,
     pub country: Option<String>,
     pub status: Option<ReleaseStatus>,
+    #[serde(rename = "track-count")]
+    pub track_count: Option<u16>,
     pub media: Vec<Medium>,
 }
 

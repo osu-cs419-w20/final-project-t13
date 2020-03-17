@@ -31,16 +31,10 @@ impl Client {
     pub async fn search_album(&self, album: &str, artist: &str) -> Result<Vec<SimplifiedAlbum>, Box<dyn std::error::Error>> {
         let q = format!("album:{} artist:{}", album, artist);
         Ok(self.client.search_album(&q, 10, 0, None).await?.albums.items)
-        //let search = self.client.search_album(&q, 5, 0, None).await?;
-        //let album = search.albums.items.first();
-        //if album.is_none() {
-            //return Ok(None);
-        //}
+    }
 
-        //let album = album.unwrap();
-        //match &album.id {
-            //Some(id) => Ok(Some(self.get_album(&id).await?)),
-            //None => Ok(None)
-        //}
+    pub async fn search_artist(&self, artist: &str) -> Result<Vec<FullArtist>, Box<dyn std::error::Error>> {
+        let q = format!("artist:{}", artist);
+        Ok(self.client.search_artist(&q, 10, 0, None).await?.artists.items)
     }
 }

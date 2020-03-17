@@ -1,7 +1,6 @@
-use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 use regex::Regex;
 
-use crate::av::metadata::{MetadataValue, Track as AVTrack};
+use crate::av::metadata::{MetadataValue, Track as AVTrack, MediaFormat};
 use crate::metadata::providers::{MBClient, SpotifyClient};
 use crate::metadata::providers::musicbrainz::SearchResult;
 use crate::metadata::providers::musicbrainz::entities;
@@ -12,11 +11,11 @@ use crate::models::*;
 pub struct TrackImporter<'a> {
     mb_client: MBClient,
     spotify_client: SpotifyClient,
-    track: AVTrack<'a>,
+    track: &'a AVTrack<'a>,
 }
 
 impl<'a> TrackImporter<'a> {
-    pub fn new(mb_client: MBClient, spotify_client: SpotifyClient, track: AVTrack<'a>) -> TrackImporter<'a> {
+    pub fn new(mb_client: MBClient, spotify_client: SpotifyClient, track: &'a AVTrack<'a>) -> TrackImporter<'a> {
         TrackImporter {
             mb_client,
             spotify_client,
@@ -37,12 +36,10 @@ impl<'a> TrackImporter<'a> {
     pub fn build_track(&self, rec: &entities::Recording, release: &entities::Release) -> Track {
         let position = release.media.first().as_ref()
             .map(|m| {
-                m.track.first().as_ref().map(|t| u16::from_str_radix(&t.number, 10).unwrap()).unwrap()
+                m.track.first().as_ref().map(|t| u16::from_str_radix(&remove_alpha(&t.number), 10).unwrap()).unwrap()
             })
             .unwrap();
-        let file_location = self.track.path_str().unwrap().to_string();
-        let file_location = file_location.as_str().trim_start_matches("/Users/jason/j/tmp/dtst");
-        const FRAGMENT: &AsciiSet = &CONTROLS.add(b' ').add(b'"').add(b'<').add(b'>').add(b'`');
+        let file_location = self.track.path_str().unwrap().trim_start_matches("/Users/jason/j/tmp/dtst");
 
         Track {
             mbid: rec.id.clone().unwrap(),
@@ -50,7 +47,7 @@ impl<'a> TrackImporter<'a> {
             position,
             bitrate: self.track.bit_rate(),
             duration: self.track.duration(),
-            file_location: utf8_percent_encode(&format!("/static{}", file_location), FRAGMENT).to_string(),
+            file_location: file_location.to_string(),
         }
     }
 
@@ -58,7 +55,16 @@ impl<'a> TrackImporter<'a> {
         let artist = self.mb_client.get_artist(&artist_credit.artist.id).await.unwrap();
         let spotify_artist = match find_artist_spotify_id(&artist.relations) {
             Some(id) => Some(self.spotify_client.get_artist(&id).await.unwrap()),
-            None => None,
+            None => match self.spotify_client.search_artist(&artist_credit.artist.name).await {
+                Ok(artists) => {
+                    artists
+                        .into_iter()
+                        .map(|a| (damlev(&a.name, &artist_credit.artist.name), a))
+                        .min_by_key(|(s, _)| *s)
+                        .map(|(_, a)| a)
+                }
+                _ => None,
+            }
         };
         let artist_image = spotify_artist.and_then(|a| {
             a.images.iter().max_by_key(|i| i.width.unwrap_or(0)).map(|i| i.url.clone())
@@ -132,9 +138,24 @@ impl<'a> TrackImporter<'a> {
         else if releases.len() == 1 { return Some(releases[0].clone()); }
 
         let md = self.track.metadata();
+        let media_format = self.track.guess_media_format();
         releases.iter()
+            .filter(|r| {
+                match media_format.as_ref() {
+                    Some(MediaFormat::CD) => r.media.iter().any(|m| m.format == Some("CD".to_string())),
+                    Some(MediaFormat::Digital) => r.media.iter().any(|m| m.format == Some("Digital Media".to_string())),
+                    _ => true,
+                }
+            })
             .map(|r| {
                 let mut score = 0;
+                match &r.disambiguation {
+                    Some(d) => if d.to_lowercase().contains("clean") {
+                        score += 3;
+                    }
+                    None => {}
+                }
+
                 match md.album {
                     Some(MetadataValue::Album(a)) => score += damlev(&r.title, a),
                     _ => {}
@@ -157,11 +178,16 @@ impl<'a> TrackImporter<'a> {
 
                 match md.track_count {
                     Some(MetadataValue::TrackCount(c)) => {
+                        let rel_count_match = match r.track_count {
+                            Some(rc) => rc == c,
+                            None => false,
+                        };
                         let count_match = r.media.iter().any(|m| match m.track_count {
                             Some(mc) => c == mc,
                             None => false,
                         });
                         if !count_match { score += 5 };
+                        if !rel_count_match { score += 5 };
                     }
                     _ => {}
                 }
@@ -177,9 +203,10 @@ impl<'a> TrackImporter<'a> {
                     _ => {}
                 }
 
-                if r.country != Some("US".to_string()) {
-                    score += 1;
+                if r.country.is_some() && r.country != Some("US".to_string()) {
+                    score += 2;
                 }
+                //println!("{}: {:?}", score, r);
                 (score, r)
             })
             .min_by_key(|(score, _) | *score)
@@ -197,7 +224,13 @@ impl<'a> TrackImporter<'a> {
             .map(|r| {
                 let mut score = 0;
                 match (r.title.as_ref(), md.track_title.as_ref()) {
-                    (Some(t1), Some(MetadataValue::TrackTitle(t2))) => score += damlev(&t1, &t2),
+                    (Some(t1), Some(MetadataValue::TrackTitle(t2))) => {
+                        let n_t2 = extract_title(&t2);
+                        score += match n_t2 {
+                            Some(n_t2) => damlev(&t1, &n_t2),
+                            None => damlev(&t1, &t2),
+                        };
+                    },
                     _ => {}
                 }
 
@@ -213,38 +246,105 @@ impl<'a> TrackImporter<'a> {
                         .unwrap_or(0);
                 }
 
+                let media_format = self.track.guess_media_format();
                 match r.releases.as_ref() {
                     Some(rs) => {
-                        let on_cd = self.track.guess_is_cd();
                         let r_score = rs.iter()
-                            .filter(|r| {
-                            if !on_cd { true }
-                            else {
-                                r.media
-                                    .iter()
-                                    .map(|m| m.format == Some("CD".to_string()))
-                                    .any(|b| b)
-                            }
-                        })
-                        .map(|r| {
-                            let mut score = 0;
-                            match md.album {
-                                Some(MetadataValue::Album(t2)) => score += damlev(&r.title, t2),
-                                _ => {}
-                            }
-                            score
-                        })
-                        .min()
-                        .unwrap_or(0);
-                    score += r_score;
+                            .map(|r| {
+                                let mut score = 0;
+
+                                match &r.disambiguation {
+                                    Some(d) => if d.to_lowercase().contains("clean") {
+                                        score += 3;
+                                    }
+                                    None => {}
+                                }
+
+                                match md.album {
+                                    Some(MetadataValue::Album(t2)) => score += damlev(&r.title, t2),
+                                    _ => {}
+                                }
+
+                                match media_format.as_ref() {
+                                    Some(MediaFormat::CD) => {
+                                        if !r.media.iter().any(|m| m.format == Some("CD".to_string())) {
+                                            score += 6;
+                                        }
+                                    }
+                                    Some(MediaFormat::Digital) => {
+                                        if !r.media.iter().any(|m| m.format == Some("Digital Media".to_string())) {
+                                            score += 6;
+                                        }
+                                    }
+                                    _ => {},
+                                }
+
+                                match r.artist_credit.as_ref() {
+                                    Some(ac) => {
+                                        score += ac.iter()
+                                            .map(|a| {
+                                                match (a.name.as_ref(), md.artist.as_ref()) {
+                                                    (Some(a1), Some(MetadataValue::Artist(a2))) => damlev(&a1, &a2),
+                                                    _ => 0,
+                                                }
+                                            })
+                                            .min()
+                                            .unwrap_or(0);
+                                    }
+                                    None => {}
+                                }
+
+                                match md.track_count {
+                                    Some(MetadataValue::TrackCount(c)) => {
+                                        let rel_count_match = match r.track_count {
+                                            Some(rc) => rc == c,
+                                            None => false,
+                                        };
+                                        let count_match = r.media.iter().any(|m| match m.track_count {
+                                            Some(mc) => c == mc,
+                                            None => false,
+                                        });
+                                        if !count_match { score += 5 };
+                                        if !rel_count_match { score += 5 };
+                                    }
+                                    _ => {}
+                                }
+
+                                match md.track_number {
+                                    Some(MetadataValue::TrackNumber(n)) => {
+                                        let num_match = r.media.iter().any(|m| match m.track_offset {
+                                            Some(o) => (o + 1) == n,
+                                            None => false,
+                                        });
+                                        if !num_match { score += 5 };
+                                    }
+                                    _ => {}
+                                }
+                                score
+                            })
+                            .min()
+                            .unwrap_or(0);
+                        score += r_score;
+                    }
+                    None => {}
                 }
-                None => {}
-            }
-            (score, r)
-        })
-        .min_by_key(|(score, _)| *score)
-        .map(|(_, r)| r)
+                //println!("{}: {:?}\n", score, r);
+                (score, r)
+            })
+            .min_by_key(|(score, _)| *score)
+            .map(|(_, r)| r)
     }
+}
+
+fn remove_alpha(s: &str) -> String {
+    let r = Regex::new(r"[a-zA-z]").unwrap();
+    r.replace_all(s, "").to_string()
+}
+
+fn extract_title(title: &str) -> Option<String> {
+    let reg = Regex::new(r"^(.+)\s+\(feat\.\s+.+?\)$").unwrap();
+    let caps = reg.captures(title);
+    caps.map(|c| c.get(1).unwrap().as_str().to_string())
 }
 
 fn find_artist_spotify_id(relations: &Vec<entities::Relation>) -> Option<String> {

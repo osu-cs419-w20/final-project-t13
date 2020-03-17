@@ -1,5 +1,9 @@
+use warp::http::StatusCode;
+
 use crate::Error;
 use crate::db::DB;
+use crate::handlers::artists::Artist;
+use crate::handlers::albums::Album;
 
 #[derive(Serialize)]
 pub struct Track {
@@ -11,20 +15,64 @@ pub struct Track {
     pub duration: i32,
     pub file_location: String,
     pub album_id: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub artist: Option<Artist>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub album: Option<Album>,
 }
 
-pub async fn get_track_with_id(id: i32, db: DB) -> Result<impl warp::Reply, warp::Rejection> {
+pub async fn get_track_with_id(id: i32, db: DB) -> Result<Box<dyn warp::Reply>, warp::Rejection> {
+    let select_fields =  &[
+        "T.id",
+        "T.mbid",
+        "T.title",
+        "T.position",
+        "T.bit_rate",
+        "T.duration",
+        "T.file_location",
+        "T.album_id",
+        "R.id",
+        "R.mbid",
+        "R.title",
+        "R.artist_id",
+        "R.image_url",
+        "A.id",
+        "A.mbid",
+        "A.name",
+        "A.image_url",
+    ].join(", ");
     let client = db.get().await?;
-    let stmt = client.prepare("
-        SELECT 
-    ").await.map_err(Error::from)?;
+    let q = format!("
+        SELECT {}
+        FROM track T
+        INNER JOIN album R ON R.id = T.album_id
+        INNER JOIN artist A ON A.id = R.artist_id
+        WHERE T.id = $1
+    ", select_fields);
+    let stmt = client.prepare(&q).await.map_err(Error::from)?;
     let rows = client.query(&stmt, &[&id]).await.map_err(Error::from)?;
 
     if rows.len() < 1 {
-        return Err(warp::reject());
+        return Ok(Box::new(warp::reply::with_status(warp::reply(), StatusCode::NOT_FOUND)));
     }
 
     let row = &rows[0];
+    let album = Album {
+        id: row.get(8),
+        mbid: row.get(9),
+        title: row.get(10),
+        artist_id: row.get(11),
+        image_url: row.get(12),
+        artist: None,
+        tracks: None,
+    };
+    let artist = Artist {
+        id: row.get(13),
+        mbid: row.get(14),
+        name: row.get(15),
+        image_url: row.get(16),
+        albums: None,
+    };
     let track = Track {
         id: row.get(0),
         mbid: row.get(1),
@@ -34,9 +82,11 @@ pub async fn get_track_with_id(id: i32, db: DB) -> Result<impl warp::Reply, warp
         duration: row.get(5),
         file_location: row.get(6),
         album_id: row.get(7),
+        album: Some(album),
+        artist: Some(artist),
     };
 
-    Ok(warp::reply::json(&track))
+    Ok(Box::new(warp::reply::json(&track)))
 }
 
 pub async fn play_track(id: i32, db: DB) -> Result<impl warp::Reply, warp::Rejection> {
@@ -52,6 +102,7 @@ pub async fn play_track(id: i32, db: DB) -> Result<impl warp::Reply, warp::Rejec
         return Err(warp::reject());
     }
 
-    let file_location: String = rows[0].get(0);
-    Ok(warp::redirect::temporary(file_location.parse::<warp::http::Uri>().unwrap()))
+    let file_location = format!("/api/static{}", rows[0].get::<_, String>(0));
+    let redir_location = crate::encoding::encode_uri(&file_location);
+    Ok(warp::redirect::temporary(redir_location.parse::<warp::http::Uri>().unwrap()))
 }

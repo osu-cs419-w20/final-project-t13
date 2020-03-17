@@ -8,6 +8,6 @@ CREATE TABLE IF NOT EXISTS track (
   file_location TEXT NOT NULL,
   album_id integer NOT NULL,
   PRIMARY KEY (id),
-  FOREIGN KEY (album_id) REFERENCES album (id)
+  FOREIGN KEY (album_id) REFERENCES album (id) ON DELETE CASCADE
 );
 

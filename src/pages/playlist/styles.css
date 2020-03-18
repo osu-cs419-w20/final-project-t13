@@ -2,13 +2,6 @@
   padding-bottom: 100px;
 }
 
-.wrapper::after {
-  content: ' ';
-  display: block;
-  height: 0;
-  clear: both;
-}
-
 .leftColumn,
 .rightColumn {
   padding-top: 100px;
@@ -18,8 +11,6 @@
   display: flex;
   flex-flow: column;
   align-items: center;
-  position: fixed;
-  width: 30%;
 }
 
 .playlistInfo {
@@ -105,7 +96,6 @@
   padding-right: 100px;
   padding-bottom: 40px;
   width: 65%;
-  float: right;
 }
 
 .rightColumn button {
@@ -151,4 +141,32 @@
 
 .tableIcon:hover {
   fill: #e0dede;
+}
+
+@media (min-width: 1301px) {
+  .wrapper::after {
+    content: ' ';
+    display: block;
+    height: 0;
+    clear: both;
+  }
+
+  .leftColumn {
+    position: fixed;
+    width: 30%;
+  }
+
+  .rightColumn {
+    float: right;
+  }
+}
+
+@media (max-width: 1300px) {
+  .leftColumn,
+  .rightColumn {
+    width: calc(100% - 200px);
+    padding-right: 0;
+    margin-left: 100px;
+    margin-right: 100px;
+  }
 }

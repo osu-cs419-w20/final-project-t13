@@ -36,3 +36,137 @@
   font-size: 0.75em;
 }
 
+
+@media (max-width: 1550px) {
+  .albumsGrid {
+    max-width: 1000px;
+    grid-template-columns: repeat(auto-fill, 240px);
+  }
+
+  .album {
+    max-width: 240px;
+  }
+
+  .albumImage {
+    height: 240px;
+    width: 240px;
+  }
+}
+
+@media (max-width: 1350px) {
+  .albumsGrid {
+    max-width: 800px;
+  }
+}
+
+@media (max-width: 1150px) {
+  .albumsGrid {
+    max-width: 700px;
+    grid-template-columns: repeat(auto-fill, 225px);
+  }
+
+  .album {
+    max-width: 225px;
+  }
+
+  .albumImage {
+    height: 225px;
+    width: 225px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .albumsGrid {
+    max-width: 600px;
+    grid-template-columns: repeat(auto-fill, 275px);
+  }
+
+  .album {
+    max-width: 275px;
+  }
+
+  .albumImage {
+    height: 275px;
+    width: 275px;
+  }
+}
+
+@media (max-width: 870px) {
+  .albumsGrid {
+    max-width: 500px;
+    grid-template-columns: repeat(auto-fill, 240px);
+  }
+
+  .album {
+    max-width: 240px;
+  }
+
+  .albumImage {
+    height: 240px;
+    width: 240px;
+  }
+}
+
+@media (max-width: 768px) {
+  .albumsGrid {
+    max-width: 650px;
+    grid-template-columns: repeat(auto-fill, 285px);
+  }
+
+  .album {
+    max-width: 285px;
+  }
+
+  .albumImage {
+    height: 285px;
+    width: 285px;
+  }
+}
+
+@media (max-width: 680px) {
+  .albumsGrid {
+    max-width: 560px;
+    grid-template-columns: repeat(auto-fill, 260px);
+  }
+
+  .album {
+    max-width: 260px;
+  }
+
+  .albumImage {
+    height: 260px;
+    width: 260px;
+  }
+}
+
+@media (max-width: 590px) {
+  .albumsGrid {
+    max-width: 460px;
+    grid-template-columns: repeat(auto-fill, 220px);
+  }
+
+  .album {
+    max-width: 220px;
+  }
+
+  .albumImage {
+    height: 220px;
+    width: 220px;
+  }
+}
+
+@media (max-width: 490px) {
+  .albumsGrid {
+    max-width: 360px;
+    grid-template-columns: repeat(auto-fill, 300px);
+  }
+
+  .album {
+    max-width: 300px;
+  }
+
+  .albumImage {
+    height: 300px;
+    width: 300px;
+  }
+}

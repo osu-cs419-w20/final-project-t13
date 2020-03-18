@@ -14,12 +14,17 @@ const Sidebar = () => {
   const playlists = useSelector(getPlaylists)
   const dispatch = useDispatch()
 
+  const [sidebarOpen, setSidebarOpen] = React.useState(false) 
+
   React.useEffect(() => {
     dispatch(fetchPlaylistsIfNeeded())
   }, [])
 
   return (
-    <div className={styles.sidebar}>
+    <div className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
+      {!sidebarOpen && <button className={styles.sidebarButton} onClick={() => setSidebarOpen(true)}>☰</button>}
+      {sidebarOpen && <button className={styles.sidebarButton} onClick={() => setSidebarOpen(false)}>x</button>}
+
       <section className={styles.sidebarSection}>
         <h3 className={styles.sidebarSectionTitle}>Menu</h3>
 

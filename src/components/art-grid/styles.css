@@ -1,6 +1,4 @@
 .list {
-  /*display: flex;*/
-  /*flex-wrap: wrap;*/
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
   margin-top: 50px;
@@ -30,10 +28,8 @@
   width: 100%;
 }
 
-/*.listItem--4 {*/
-  /*flex: 1 0 25%;*/
-/*}*/
-
-/*.listItem--2 {*/
-  /*flex: 1 0 50%;*/
-/*}*/
+@media (max-width: 1200px) {
+  .list {
+    margin-top: 25px;
+  }
+}

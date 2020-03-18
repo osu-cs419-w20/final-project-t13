@@ -7,6 +7,7 @@
   height: calc(100vh - 125px);
   background-color: #181D1D;
   border-right: 1px solid black;
+  transition: left 0.25s;
 }
 
 .sidebarSection {
@@ -102,4 +103,40 @@
   color: #bf1408;
   font-size: 0.7em;
   user-select: none;
+}
+
+.sidebarButton {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  height: 35px;
+  color: #7a7a7a;
+  transition: color 0.25s;
+  font-size: 1.4em;
+}
+
+.sidebarButton:hover {
+  color: #e0dede;
+}
+
+@media (max-width: 768px) {
+  .sidebarButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    left: 225px;
+  }
+
+  .sidebar {
+    left: -225px;
+    z-index: 99;
+  }
+
+  .sidebarOpen {
+    left: 0;
+  }
 }

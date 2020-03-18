@@ -9,7 +9,11 @@ const SingleArtist = ({ artist, className = '' }) => {
   return (
     <li className={className}>
       <div>
-        <CoverImage link={`/artists/${artist.id}`} image={artist.image_url} />
+        <CoverImage
+          link={`/artists/${artist.id}`}
+          image={artist.image_url}
+          imageClass={styles.artistImage}
+        />
 
         <div className={styles.artistInfo}>
             <Link

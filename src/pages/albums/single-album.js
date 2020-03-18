@@ -9,7 +9,12 @@ const SingleAlbum = ({ album, className = '', play }) => {
   return (
     <li className={className}>
       <div>
-        <CoverImage link={`/albums/${album.id}`} image={album.image_url} play={play} />
+        <CoverImage
+          link={`/albums/${album.id}`}
+          image={album.image_url}
+          play={play}
+          imageClass={styles.albumImage}
+        />
 
         <div className={styles.albumInfo}>
             <Link

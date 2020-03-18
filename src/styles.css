@@ -49,3 +49,10 @@ main {
 :global(.react-contextmenu-item:hover) {
   background-color: #3a3842;
 }
+
+@media (max-width: 768px) {
+  main {
+    left: 0;
+    width: 100vw;
+  }
+}

@@ -246,3 +246,31 @@
   font-weight: 300;
   font-size: 0.85em;
 }
+
+@media (max-width: 1000px) {
+  .albumImage,
+  .notPlayingIcon {
+    display: none;
+  }
+
+  .curretSongInfo {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 950px) {
+  .currentSong {
+    flex-grow: 0;
+  }
+
+  .controls {
+    align-items: center;
+  }
+
+  .timer {
+    position: absolute;
+    bottom: 50px;
+    padding-right: 10px;
+    right: 0;
+  }
+}

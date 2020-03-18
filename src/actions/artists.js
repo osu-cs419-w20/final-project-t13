@@ -37,7 +37,7 @@ const receiveArtists = (json) => {
 
 const fetchArtists = (page) => {
   return dispatch => {
-    return fetch(`/api/artists?page=${page}&limit=15`)
+    return fetch(`/api/artists?page=${page}&limit=16`)
       .then(res => res.json())
       .then(json => dispatch(receiveArtists(json)))
   }

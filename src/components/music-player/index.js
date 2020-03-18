@@ -34,7 +34,7 @@ const MusicPlayer = () => {
   const [queueOpen, setQueueOpen] = React.useState(false)
 
   const finish = () => {
-    if (queue.next.length > 1) {
+    if (queue.next.length) {
       dispatch(nextTrack())
     } else {
       dispatch(pauseMusic())
@@ -42,13 +42,13 @@ const MusicPlayer = () => {
   }
 
   const playPrevious = () => {
-    if (prevTrack) {
+    if (queue.prev.length) {
       dispatch(prevTrack())
     }
   }
 
   const playNext = () => {
-    if (nextTrack) {
+    if (queue.next.length) {
       dispatch(nextTrack())
     }
   }

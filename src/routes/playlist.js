@@ -51,7 +51,7 @@ const PlaylistRoute = (props) => {
 
       <PlaylistPage
         playlist={playlist}
-        play={(track, next) => dispatch(playTrack(track.id))}
+        play={(track, next) => dispatch(playTrack(track.id, next))}
         queue={ids => dispatch(queueTracks(Array.isArray(ids) ? ids : [ids]))}
         addToPlaylist={setModalTrackId}
         openPlaylistModal={() => setModalOpen(true)}

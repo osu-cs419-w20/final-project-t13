@@ -32,7 +32,7 @@ const InternalAudio = ({
         play()
       }
     }
-  }, [currentSong])
+  }, [currentSong.id])
 
   return (
     <audio

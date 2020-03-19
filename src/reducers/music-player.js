@@ -137,10 +137,19 @@ const getQueue = (state) => {
 
 const getCurrentTrack = (state) => {
   if (!state.musicPlayer.currentTrack) { return null }
-  const track = state.byId.tracks[state.musicPlayer.currentTrack]
-  if (!track) { return null }
+  let track = state.byId.tracks[state.musicPlayer.currentTrack]
+  if (!track) {
+    track = state.byId.playlistTracks[state.musicPlayer.currentTrack]
+    if (!track) { return null }
+    const { albumId, albumTitle, albumImage, ...other } = track
+    const album = {
+      id: albumId,
+      title: albumTitle,
+      image_url: albumImage,
+    }
+    return { album, track: other }
+  }
   const album = state.byId.albums[track.album_id]
-
   return { album, track }
 }
 

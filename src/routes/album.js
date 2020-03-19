@@ -42,7 +42,7 @@ const AlbumRoute = (props) => {
     if (album) {
       document.title = album.title
     }
-  }, [album])
+  }, [album ? album.id : null])
 
   return (
     <Page {...props} pageTitle={`Viewing Album: ${album ? album.title : ''}`}>

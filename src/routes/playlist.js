@@ -38,7 +38,7 @@ const PlaylistRoute = (props) => {
     if (playlist) {
       document.title = `Playlist: ${playlist.name}`
     }
-  }, [playlist])
+  }, [playlist ? playlist.id : null])
 
   return (
     <Page {...props} pageTitle={`Viewing Playlist: ${playlist ? playlist.name : ''}`}>

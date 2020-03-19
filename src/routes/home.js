@@ -8,6 +8,11 @@ const HomeRoute = (props) => {
     fontWeight: 500,
     padding: '35px'
   }
+
+  React.useEffect(() => {
+    document.title = 'Home'
+  }, [])
+
   return (
     <Page {...props} pageTitle="Home">
       <h2 style={styles}>Select a page from the sidebar to start listening!</h2>

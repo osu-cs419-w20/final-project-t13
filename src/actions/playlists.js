@@ -25,11 +25,11 @@ const fetchPlaylist = id => {
 const fetchPlaylistIfNeeded = id => {
   return (dispatch, getState) => {
     const state = getState()
-    if (!state.byId.playlists[id] || !state.byId.playlists[id].tracks) {
-      return dispatch(fetchPlaylist(id))
-    } else {
-      return Promise.resolve()
-    }
+    //if (!state.byId.playlists[id] || !state.byId.playlists[id].tracks) {
+    return dispatch(fetchPlaylist(id))
+    //} else {
+      //return Promise.resolve()
+    //}
   }
 }
 

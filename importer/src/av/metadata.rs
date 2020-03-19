@@ -152,12 +152,15 @@ impl<'a> Track<'a> {
 
     pub fn guess_media_format(&self) -> Option<MediaFormat> {
         let fmt = self.ctx.path().parent().and_then(|p| p.to_str()).and_then(|path| {
-            let reg = Regex::new(r"^.+?(?:\[(CD|WEB)(?:[\s0-9A-Z- ]*)\]|\((CD|WEB)(?:[\s0-9A-Z- ]*)\)).+?$").unwrap();
+            let reg = Regex::new(r"^.+?(?:\[(CD|WEB)(?:[\s0-9A-Z- ]*?)\]|\((CD|WEB)(?:[\s0-9A-Z- ]*?)\)).*$").unwrap();
             match reg.captures(path) {
-                Some(caps) => match caps.get(1).unwrap().as_str() {
-                    "CD" => Some(MediaFormat::CD),
-                    "WEB" => Some(MediaFormat::Digital),
-                    _ => None,
+                Some(caps) => {
+                    let idx = if caps.get(1).is_some() { 1 } else { 2 };
+                    match caps.get(idx).unwrap().as_str() {
+                        "CD" => Some(MediaFormat::CD),
+                        "WEB" => Some(MediaFormat::Digital),
+                        _ => None,
+                    }
                 }
                 _ => None,
             }

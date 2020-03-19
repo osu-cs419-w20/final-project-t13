@@ -124,7 +124,14 @@ fn build_query_from_track(track: &crate::av::metadata::Track<'_>) -> String {
             match m {
                 Some(Album(a)) => Some(format!("release:{}", escape_query(&normalize_album_title(&a)))),
                 Some(Artist(a)) => Some(format!("(artist:{0} OR artistname:{0} OR creditname:{0})", escape_query(&normalize_track_title(&a)))),
-                Some(TrackTitle(t)) => Some(format!("(recording:{0} OR recordingaccent:{0})", escape_query(t))),
+                Some(TrackTitle(t)) => {
+                    let q = escape_query(t);
+                    if q.as_str().trim() == "" {
+                        None
+                    } else {
+                        Some(format!("(recording:{0} OR recordingaccent:{0})", q))
+                    }
+                }
                 Some(TrackNumber(n)) => Some(format!("tnum:{}", n)),
                 Some(TrackCount(c)) => Some(format!("(tracks:{0} OR tracksrelease:{0})", c)),
                 Some(TrackLength(l)) => Some(format!("dur:{}", (*l as u64) * 1000)),
